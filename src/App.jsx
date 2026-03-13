@@ -6,10 +6,9 @@ import { X, ChevronLeft, ChevronRight, AlertCircle, ArrowRight, LayoutGrid, Scro
 // ==============================================================================
 
 const SITE_CONFIG = {
-  name: "HARU",
-  email: "", 
-  instagramId: "_hharu_____",
-  instagramUrl: "https://www.instagram.com/_hharu_____?igsh=M3loaHdqYmYzeXFk&utm_source=qr"
+  name: "ALEX.W",
+  email: "hello@alex.com",
+  instagram: "@alex.photos"
 };
 
 // 📌 调整分类顺序：Portrait First
