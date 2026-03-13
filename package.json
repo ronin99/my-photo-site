@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://<您的GitHub用户名>.github.io/<您的仓库名>", 
+  "homepage": "https://ronin99.github.io/my-photo-site", 
   "scripts": {
     "dev": "vite",
     "build": "vite build",
