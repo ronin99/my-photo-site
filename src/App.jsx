@@ -22,9 +22,8 @@ const SITE_CONFIG = {
  */
 const imagesRecord = import.meta.glob('/src/photos/**/*.{jpg,jpeg,png,JPG,JPEG,PNG,webp}', { eager: true, as: 'url' });
 
-//const imagesRecord = {}; // 占位符
+//const imagesRecord = {}; 
 
-// 文件夹显示美化字典
 const FIX_NAMES = {
   "portarit": "Portrait",
   "portrait": "Portrait",
@@ -130,11 +129,11 @@ export default function App() {
     return () => cancelAnimationFrame(frame);
   }, [isHoveringImage, activeTab, viewMode, isAutoPlaying]);
 
-  // 滚轮映射
+  // 滚轮映射 (仅限桌面端)
   useEffect(() => {
-    if (viewMode !== 'horizontal' || !scrollRef.current) return;
+    if (viewMode !== 'horizontal' || !scrollRef.current || window.innerWidth < 768) return;
     const handleWheel = (e) => {
-      if (e.deltaY !== 0 && window.innerWidth > 768) {
+      if (e.deltaY !== 0) {
         e.preventDefault();
         scrollRef.current.scrollLeft += e.deltaY;
       }
@@ -147,10 +146,10 @@ export default function App() {
   const currentImages = LOCAL_ALBUMS[activeTab] || [];
 
   return (
-    <div className={`min-h-screen w-full bg-[#fdfdfd] text-neutral-900 font-sans selection:bg-transparent flex flex-col select-none ${viewMode === 'grid' ? 'overflow-y-auto' : 'md:overflow-hidden'}`}>
+    <div className={`min-h-screen w-full bg-[#fdfdfd] text-neutral-900 font-sans selection:bg-transparent flex flex-col select-none overflow-x-hidden ${viewMode === 'grid' ? 'overflow-y-auto' : 'md:overflow-hidden overflow-y-auto'}`}>
       
       {/* 顶部导航 */}
-      <header className="fixed top-0 left-0 w-full z-40 px-6 py-6 md:px-8 md:py-8 flex justify-between items-start pointer-events-none bg-gradient-to-b from-white/90 to-transparent">
+      <header className="fixed top-0 left-0 w-full z-40 px-6 py-6 md:px-8 md:py-8 flex justify-between items-start pointer-events-none bg-gradient-to-b from-white/95 to-transparent">
         <div className="pointer-events-auto">
           <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase cursor-pointer" onClick={() => window.location.reload()}>{SITE_CONFIG.name}</h1>
           <p className="text-[9px] md:text-[10px] text-gray-400 mt-1 tracking-[0.2em] uppercase font-medium">Visual Portfolio</p>
@@ -177,13 +176,13 @@ export default function App() {
       {/* 主展示区 */}
       <main 
         ref={scrollRef} 
-        className={`flex-1 w-full flex flex-col md:flex-row items-center hide-scrollbar ${viewMode === 'horizontal' ? 'pt-32 pb-24 md:pt-0 md:pb-0 md:overflow-x-auto' : 'pt-40 pb-24'}`}
+        className={`flex-1 w-full flex flex-col md:flex-row items-center hide-scrollbar ${viewMode === 'horizontal' ? 'pt-32 pb-24 md:pt-0 md:pb-0 md:overflow-x-auto overflow-y-visible' : 'pt-40 pb-24 overflow-y-auto'}`}
       >
         {viewMode === 'horizontal' ? (
-          /* 核心自适应逻辑：手机端 flex-col (垂直), 桌面端 md:flex-row (横向) */
-          <div className="flex flex-col md:flex-row gap-12 md:gap-48 items-center px-6 md:px-[15vw] min-w-full md:min-w-max">
+          /* 核心自适应逻辑：手机端 flex-col (垂直纵向), 桌面端 md:flex-row (横向漫游) */
+          <div className="flex flex-col md:flex-row gap-10 md:gap-48 items-center px-6 md:px-[15vw] w-full md:w-auto md:min-w-max">
             
-            {/* 封面文字 */}
+            {/* 封面标题 */}
             <div className="w-full md:w-[25vw] shrink-0 flex flex-col justify-center mb-10 md:mb-0">
               <h2 className="text-5xl md:text-8xl font-thin tracking-tighter leading-none mb-4 md:mb-6">{dynamicCategories.find(c => c.id === activeTab)?.label}</h2>
               <div className="w-10 h-[1px] bg-neutral-200 mb-6"></div>
@@ -203,13 +202,18 @@ export default function App() {
                 className={`relative shrink-0 transition-all duration-1000 md:hover:scale-[1.03] cursor-pointer w-full md:w-auto
                   ${window.innerWidth > 768 ? 
                     ((index % 3 === 0) ? 'self-start mt-12' : (index % 3 === 1) ? 'self-center' : 'self-end mb-12') 
-                    : 'mb-8'
+                    : 'mb-6'
                   }
                 `}
               >
-                <div className="overflow-hidden shadow-xl md:shadow-2xl max-h-[75vh] md:max-h-[60vh] bg-neutral-50 flex items-center justify-center rounded-sm">
-                  {/* 使用 object-contain 确保无论什么比例都不切图 */}
-                  <img src={img.src} loading="lazy" className="w-full h-auto md:h-full md:w-auto object-contain pointer-events-none" draggable="false" />
+                <div className="overflow-hidden shadow-xl md:shadow-2xl w-full h-auto md:max-h-[60vh] bg-neutral-50 flex items-center justify-center rounded-sm">
+                  {/* 使用 w-full 确保手机端铺满宽度，h-full md:w-auto 确保桌面端维持比例 */}
+                  <img 
+                    src={img.src} 
+                    loading="lazy" 
+                    className="w-full h-auto md:h-full md:w-auto object-contain pointer-events-none" 
+                    draggable="false" 
+                  />
                 </div>
               </div>
             ))}
@@ -234,7 +238,7 @@ export default function App() {
       </main>
 
       {/* 底部控制栏 */}
-      <footer className="fixed bottom-0 left-0 w-full p-6 md:p-8 flex flex-row justify-between items-end pointer-events-none text-[9px] md:text-[10px] text-gray-400 uppercase tracking-[0.2em] bg-gradient-to-t from-white/90 to-transparent">
+      <footer className="fixed bottom-0 left-0 w-full p-6 md:p-8 flex flex-row justify-between items-end pointer-events-none text-[9px] md:text-[10px] text-gray-400 uppercase tracking-[0.2em] bg-gradient-to-t from-white/95 to-transparent">
         <div className="pointer-events-auto flex items-center gap-4 md:gap-8">
           <span className="hidden sm:inline">{currentImages.length} Photographs</span>
           <div className="flex items-center gap-4 md:gap-6">
@@ -272,7 +276,8 @@ export default function App() {
         .hide-scrollbar::-webkit-scrollbar { display: none; } 
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @media (max-width: 768px) {
-          body { overflow-y: auto !important; height: auto !important; }
+          body { overflow-y: auto !important; height: auto !important; position: static !important; }
+          #root { height: auto !important; overflow: visible !important; }
         }
       `}</style>
     </div>
