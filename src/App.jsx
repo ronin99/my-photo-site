@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, AlertCircle, ArrowRight, LayoutGrid, ScrollText, Play, Pause, Instagram, Mail } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, AlertCircle, ArrowRight, LayoutGrid, ScrollText, Play, Pause, Instagram, Mail, Menu as MenuIcon } from 'lucide-react';
 
 // ==============================================================================
 // 🛠️ 网站全局配置
@@ -106,6 +106,7 @@ export default function App() {
   const [isHoveringImage, setIsHoveringImage] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [viewMode, setViewMode] = useState('horizontal'); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const scrollRef = useRef(null);
 
   // 全局防盗
@@ -155,22 +156,38 @@ export default function App() {
           <p className="text-[9px] md:text-[10px] text-gray-400 mt-1 tracking-[0.2em] uppercase font-medium">Visual Portfolio</p>
         </div>
         
-        <nav className="pointer-events-auto flex flex-col items-end gap-1.5 md:gap-1">
-          {dynamicCategories.map((cat, idx) => (
-            <button 
-              key={cat.id} 
-              onClick={() => { 
-                setActiveTab(cat.id); 
-                setViewMode('horizontal'); 
-                window.scrollTo({top: 0, behavior: 'smooth'});
-              }} 
-              className={`text-[10px] md:text-sm font-medium tracking-widest uppercase transition-all flex items-center gap-2 md:gap-3 ${activeTab === cat.id ? 'text-black translate-x-0' : 'text-gray-300 hover:text-gray-500 translate-x-1 md:translate-x-2 hover:translate-x-0'}`}
-            >
-              <span className={`h-[1px] bg-black transition-all duration-300 ${activeTab === cat.id ? 'w-4 md:w-8' : 'w-0'}`}></span>
-              {cat.label} <span className="text-[8px] md:text-[9px] opacity-50">0{idx + 1}</span>
-            </button>
-          ))}
-        </nav>
+        <div className="flex flex-col items-end pointer-events-auto">
+          {/* 手机端菜单按钮 */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-black"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+          </button>
+
+          {/* 导航列表 - 手机端受 isMobileMenuOpen 控制，电脑端 md:flex 始终显示 */}
+          <nav className={`
+            flex flex-col items-end gap-1.5 md:gap-1 transition-all duration-300 ease-in-out
+            ${isMobileMenuOpen ? 'opacity-100 translate-y-2' : 'opacity-0 -translate-y-4 md:opacity-100 md:translate-y-0 pointer-events-none md:pointer-events-auto'}
+            md:flex
+          `}>
+            {dynamicCategories.map((cat, idx) => (
+              <button 
+                key={cat.id} 
+                onClick={() => { 
+                  setActiveTab(cat.id); 
+                  setViewMode('horizontal'); 
+                  setIsMobileMenuOpen(false); // 点击后自动关闭菜单
+                  window.scrollTo({top: 0, behavior: 'smooth'});
+                }} 
+                className={`text-[11px] md:text-sm font-medium tracking-widest uppercase transition-all flex items-center gap-2 md:gap-3 ${activeTab === cat.id ? 'text-black translate-x-0' : 'text-gray-300 hover:text-gray-500 translate-x-1 md:translate-x-2 hover:translate-x-0'}`}
+              >
+                <span className={`h-[1px] bg-black transition-all duration-300 ${activeTab === cat.id ? 'w-4 md:w-8' : 'w-0'}`}></span>
+                {cat.label} <span className="text-[8px] md:text-[9px] opacity-50">0{idx + 1}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
       </header>
 
       {/* 主展示区 */}
@@ -179,7 +196,6 @@ export default function App() {
         className={`flex-1 w-full flex flex-col md:flex-row items-center hide-scrollbar ${viewMode === 'horizontal' ? 'pt-32 pb-24 md:pt-0 md:pb-0 md:overflow-x-auto overflow-y-visible' : 'pt-40 pb-24 overflow-y-auto'}`}
       >
         {viewMode === 'horizontal' ? (
-          /* 核心自适应逻辑：手机端 flex-col (垂直纵向), 桌面端 md:flex-row (横向漫游) */
           <div className="flex flex-col md:flex-row gap-10 md:gap-48 items-center px-6 md:px-[15vw] w-full md:w-auto md:min-w-max">
             
             {/* 封面标题 */}
@@ -207,7 +223,6 @@ export default function App() {
                 `}
               >
                 <div className="overflow-hidden shadow-xl md:shadow-2xl w-full h-auto md:max-h-[60vh] bg-neutral-50 flex items-center justify-center rounded-sm">
-                  {/* 使用 w-full 确保手机端铺满宽度，h-full md:w-auto 确保桌面端维持比例 */}
                   <img 
                     src={img.src} 
                     loading="lazy" 
